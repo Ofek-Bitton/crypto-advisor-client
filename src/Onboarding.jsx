@@ -2,14 +2,13 @@ import { useState } from "react";
 import { savePreferences } from "./api";
 
 export default function Onboarding({ onFinish, onLogout }) {
-
-
   const [assets, setAssets] = useState({
-    BTC:false,
+    BTC: false,
     ETH: false,
     SOL: false,
     DOGE: false,
   });
+
   // "low" / "medium" / "high"
   const [risk, setRisk] = useState("");
 
@@ -55,11 +54,9 @@ export default function Onboarding({ onFinish, onLogout }) {
         throw new Error(result.data?.msg || "Failed to save preferences");
       }
 
-      // mark completed
       window.localStorage.setItem("hasPrefs", "true");
       setSaved(true);
 
-      // move to dashboard
       onFinish && onFinish();
     } catch (err) {
       console.error(err);
@@ -67,190 +64,462 @@ export default function Onboarding({ onFinish, onLogout }) {
     }
   }
 
+  // styled header buttons
+  const LogoutButton = (
+    <button
+      onClick={onLogout}
+      style={{
+        backgroundColor: "transparent",
+        border: "1px solid rgba(255,255,255,0.2)",
+        color: "#fff",
+        padding: "8px 14px",
+        borderRadius: "999px",
+        fontSize: "0.8rem",
+        fontWeight: "500",
+        lineHeight: 1,
+        display: "flex",
+        alignItems: "center",
+        gap: "6px",
+        cursor: "pointer",
+        boxShadow: "0 8px 24px rgba(0,0,0,0.6)",
+        backdropFilter: "blur(6px)",
+        backgroundImage:
+          "radial-gradient(circle at 0% 0%, rgba(0, 255, 255, 0.15) 0%, rgba(0,0,0,0) 60%)",
+        fontFamily: "Inter, system-ui, sans-serif",
+        transition: "all 0.15s ease",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.border = "1px solid rgba(0,255,255,0.5)";
+        e.currentTarget.style.boxShadow =
+          "0 10px 30px rgba(0,255,255,0.25), 0 0 40px rgba(0,255,255,0.4)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.border = "1px solid rgba(255,255,255,0.2)";
+        e.currentTarget.style.boxShadow =
+          "0 8px 24px rgba(0,0,0,0.6), 0 0 0 rgba(0,0,0,0)";
+      }}
+    >
+      <span>Log out</span>
+      <span style={{ fontSize: "0.9rem" }}>⏻</span>
+    </button>
+  );
+
   return (
     <div
       style={{
-        minHeight: "100vh",
-        background: "#000",
+        backgroundColor: "#000",
         color: "#fff",
+        minHeight: "100vh",
+        width: "100%",
+        padding: "24px",
+        fontFamily: "Inter, system-ui, sans-serif",
         display: "flex",
-        // alignItems: "flex-start",
-        flexDirection: 'column',
-        justifyContent: "center",
-        fontFamily: "sans-serif",
-        paddingTop: "32px",
-        alignItems: 'center'
+        flexDirection: "column",
+        alignItems: "center",
       }}
     >
-      <button onClick={onLogout}>Log out</button>
-      <h1 style={{ fontSize: "28px", fontWeight: "600", marginBottom: "8px", paddingBottom: '8px' }}>
-        Personalize your crypto experience
-      </h1>
-      <p style={{ color: "#444", fontSize: "15px", marginBottom: "16px" , paddingBottom: '8px' }}>
-        Let's get to know you so we can send alerts and recommendations that
-        match your style 😉
-      </p>
+      {/* top bar */}
+      <div
+        style={{
+          width: "100%",
+          maxWidth: "900px",
+          display: "flex",
+          justifyContent: "flex-end",
+          marginBottom: "24px",
+        }}
+      >
+        {LogoutButton}
+      </div>
 
+      {/* headline section */}
+      <div
+        style={{
+          width: "100%",
+          maxWidth: "900px",
+          textAlign: "center",
+          marginBottom: "32px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "12px",
+        }}
+      >
+        <div
+          style={{
+            fontSize: "0.7rem",
+            fontWeight: 500,
+            color: "rgba(111,255,233,0.9)",
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            lineHeight: 1,
+          }}
+        >
+          Setup your trading DNA
+        </div>
+
+        <h1
+          style={{
+            fontSize: "2rem",
+            fontWeight: 600,
+            margin: 0,
+            lineHeight: 1.2,
+            backgroundImage:
+              "linear-gradient(90deg,#ffffff 0%,#6fffe9 50%,#00b3ff 100%)",
+            WebkitBackgroundClip: "text",
+            color: "transparent",
+            textShadow: "0 30px 80px rgba(0,255,255,0.3)",
+            maxWidth: "700px",
+          }}
+        >
+          Personalize your crypto feed.
+        </h1>
+
+        <p
+          style={{
+            fontSize: "1rem",
+            fontWeight: 400,
+            lineHeight: 1.5,
+            color: "rgba(255,255,255,0.6)",
+            maxWidth: "560px",
+            margin: 0,
+          }}
+        >
+          Tell us what you trade and how you think, and we’ll build a live
+          dashboard just for you – curated market moves, tailored alerts,
+          smarter AI insights. You get signal, not noise. ✦
+        </p>
+
+        {errorMsg && (
+          <p
+            style={{
+              margin: 0,
+              fontSize: "0.8rem",
+              fontWeight: 500,
+              lineHeight: 1.4,
+              color: "#f55",
+            }}
+          >
+            {errorMsg}
+          </p>
+        )}
+
+        {saved && (
+          <p
+            style={{
+              margin: 0,
+              fontSize: "0.8rem",
+              fontWeight: 500,
+              lineHeight: 1.4,
+              color: "rgb(0,255,170)",
+            }}
+          >
+            Saved. Redirecting to your dashboard...
+          </p>
+        )}
+      </div>
+
+      {/* preferences card */}
       <form
         onSubmit={handleSubmit}
         style={{
-          width: "380px",
-          maxWidth: "90vw",
-          background: "#000",
-          padding: "20px",
-          borderRadius: "10px",
-          border: "1px solid white",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          width: "100%",
+          maxWidth: "500px",
+          backgroundColor: "rgba(20,20,20,0.6)",
+          border: "1px solid rgba(111,255,233,0.25)",
+          borderRadius: "12px",
+          padding: "24px",
+          boxShadow:
+            "0 30px 120px rgba(0,0,0,0.9), 0 0 80px rgba(0,255,255,0.15)",
+          backdropFilter: "blur(8px)",
           fontSize: "14px",
           lineHeight: 1.5,
+          display: "flex",
+          flexDirection: "column",
+          gap: "20px",
         }}
       >
-        {/* Crypto assets */}
-        <div style={{ marginBottom: "20px" }}>
-          <h3 style={{ marginBottom: "8px", fontSize: "15px" }}>
-            Which coins are you interested in?
+        {/* crypto assets */}
+        <div>
+          <h3
+            style={{
+              margin: "0 0 8px 0",
+              fontSize: "15px",
+              fontWeight: 600,
+              color: "#fff",
+            }}
+          >
+            Which coins are you into?
           </h3>
 
           {Object.keys(assets).map((coin) => (
             <label
               key={coin}
               style={{
-                display: "block",
-                marginBottom: "6px",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                marginBottom: "8px",
                 cursor: "pointer",
+                color: "#fff",
+                fontSize: "14px",
+                fontWeight: 400,
               }}
             >
               <input
                 type="checkbox"
                 checked={assets[coin]}
                 onChange={() => toggleAsset(coin)}
-                style={{ marginLeft: "8px" }}
+                style={{
+                  accentColor: "#00e0ff",
+                  cursor: "pointer",
+                }}
               />
-              {coin}
+              <span>{coin}</span>
             </label>
           ))}
         </div>
 
-        {/* Investor profile */}
-        <div style={{ marginBottom: "20px" }}>
-          <h3 style={{ marginBottom: "8px", fontSize: "15px" }}>
-            What type of investor are you?
+        {/* investor profile */}
+        <div>
+          <h3
+            style={{
+              margin: "0 0 8px 0",
+              fontSize: "15px",
+              fontWeight: 600,
+              color: "#fff",
+            }}
+          >
+            What's your trading style?
           </h3>
 
-          <label style={{ display: "block", marginBottom: "6px" }}>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              marginBottom: "8px",
+              cursor: "pointer",
+              color: "#fff",
+              fontSize: "14px",
+              fontWeight: 400,
+              lineHeight: 1.4,
+            }}
+          >
             <input
               type="radio"
               name="risk"
               value="low"
               checked={risk === "low"}
               onChange={() => setRisk("low")}
-              style={{ marginLeft: "8px" }}
+              style={{
+                accentColor: "#00e0ff",
+                cursor: "pointer",
+              }}
             />
-            Conservative (low risk)
+            <span>
+              Conservative{" "}
+              <span
+                style={{
+                  color: "rgba(255,255,255,0.5)",
+                  fontWeight: 400,
+                }}
+              >
+                (low risk)
+              </span>
+            </span>
           </label>
 
-          <label style={{ display: "block", marginBottom: "6px" }}>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              marginBottom: "8px",
+              cursor: "pointer",
+              color: "#fff",
+              fontSize: "14px",
+              fontWeight: 400,
+              lineHeight: 1.4,
+            }}
+          >
             <input
               type="radio"
               name="risk"
               value="medium"
               checked={risk === "medium"}
               onChange={() => setRisk("medium")}
-              style={{ marginLeft: "8px" }}
+              style={{
+                accentColor: "#00e0ff",
+                cursor: "pointer",
+              }}
             />
-            Balanced (medium risk)
+            <span>
+              Balanced{" "}
+              <span
+                style={{
+                  color: "rgba(255,255,255,0.5)",
+                  fontWeight: 400,
+                }}
+              >
+                (medium risk)
+              </span>
+            </span>
           </label>
 
-          <label style={{ display: "block", marginBottom: "6px" }}>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              marginBottom: "8px",
+              cursor: "pointer",
+              color: "#fff",
+              fontSize: "14px",
+              fontWeight: 400,
+              lineHeight: 1.4,
+            }}
+          >
             <input
               type="radio"
               name="risk"
               value="high"
               checked={risk === "high"}
               onChange={() => setRisk("high")}
-              style={{ marginLeft: "8px" }}
+              style={{
+                accentColor: "#00e0ff",
+                cursor: "pointer",
+              }}
             />
-            Aggressive (degen mode 🚀)
+            <span>
+              Aggressive{" "}
+              <span
+                style={{
+                  color: "rgba(255,255,255,0.5)",
+                  fontWeight: 400,
+                }}
+              >
+                (degen mode 🚀)
+              </span>
+            </span>
           </label>
         </div>
 
-        {/* Content preferences */}
-        <div style={{ marginBottom: "20px" }}>
-          <h3 style={{ marginBottom: "8px", fontSize: "15px" }}>
-            What kind of content do you want to receive?
+        {/* content preferences */}
+        <div>
+          <h3
+            style={{
+              margin: "0 0 8px 0",
+              fontSize: "15px",
+              fontWeight: 600,
+              color: "#fff",
+            }}
+          >
+            What do you actually want to get from us?
           </h3>
 
-          <label style={{ display: "block", marginBottom: "6px" }}>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              marginBottom: "8px",
+              cursor: "pointer",
+              color: "#fff",
+              fontSize: "14px",
+              fontWeight: 400,
+            }}
+          >
             <input
               type="checkbox"
               checked={contentTypes.news}
               onChange={() => toggleContent("news")}
-              style={{ marginLeft: "8px" }}
+              style={{
+                accentColor: "#00e0ff",
+                cursor: "pointer",
+              }}
             />
-            Market news / live updates
+            <span>Market news / live updates</span>
           </label>
 
-          <label style={{ display: "block", marginBottom: "6px" }}>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              marginBottom: "8px",
+              cursor: "pointer",
+              color: "#fff",
+              fontSize: "14px",
+              fontWeight: 400,
+            }}
+          >
             <input
               type="checkbox"
               checked={contentTypes.education}
               onChange={() => toggleContent("education")}
-              style={{ marginLeft: "8px" }}
+              style={{
+                accentColor: "#00e0ff",
+                cursor: "pointer",
+              }}
             />
-            Learning / smart explanations
+            <span>Learning / smart explanations</span>
           </label>
 
-          <label style={{ display: "block", marginBottom: "6px" }}>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              marginBottom: "8px",
+              cursor: "pointer",
+              color: "#fff",
+              fontSize: "14px",
+              fontWeight: 400,
+            }}
+          >
             <input
               type="checkbox"
               checked={contentTypes.signals}
               onChange={() => toggleContent("signals")}
-              style={{ marginLeft: "8px" }}
+              style={{
+                accentColor: "#00e0ff",
+                cursor: "pointer",
+              }}
             />
-            Technical analysis / signals
+            <span>Technical analysis / signals</span>
           </label>
         </div>
 
+        {/* submit CTA */}
         <button
           type="submit"
           style={{
             width: "100%",
-            padding: "10px",
-            background: "#007bff",
+            padding: "14px 16px",
+            background:
+              "linear-gradient(90deg, #0066ff 0%, #00e0ff 100%)",
             color: "#fff",
-            border: "none",
-            borderRadius: "5px",
+            border: "0",
+            borderRadius: "10px",
             cursor: "pointer",
-            fontSize: "16px",
-            fontWeight: "bold",
+            fontSize: "1rem",
+            fontWeight: "600",
+            fontFamily: "Inter, system-ui, sans-serif",
+            boxShadow:
+              "0 20px 60px rgba(0,102,255,0.4), 0 0 80px rgba(0,224,255,0.4)",
+            transition: "all 0.15s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.boxShadow =
+              "0 24px 72px rgba(0,224,255,0.6), 0 0 100px rgba(0,224,255,0.6)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow =
+              "0 20px 60px rgba(0,102,255,0.4), 0 0 80px rgba(0,224,255,0.4)";
           }}
         >
-          Save and continue
+          Save and continue 🚀
         </button>
-
-        {saved && (
-          <p
-            style={{
-              color: "green",
-              marginTop: "12px",
-              textAlign: "center",
-            }}
-          >
-            Saved! Taking you to your dashboard...
-          </p>
-        )}
-
-        {errorMsg && (
-          <p
-            style={{
-              color: "red",
-              marginTop: "12px",
-              textAlign: "center",
-            }}
-          >
-            {errorMsg}
-          </p>
-        )}
       </form>
     </div>
   );

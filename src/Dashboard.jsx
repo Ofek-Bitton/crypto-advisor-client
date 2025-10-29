@@ -36,10 +36,10 @@ export default function Dashboard({ onLogout, setScreen }) {
         const data = await getDashboardData(token);
         // data = { user, prices, news, aiInsight, meme }
 
-        // Load user preferences, prioritize data from server
+        // Pull user preferences from server first
         let prefsFromServer = data.user?.preferences;
 
-        // If preferences are missing, try reading from localStorage
+        // If preferences are missing (for safety in dev), try from localStorage
         if (
           (!prefsFromServer || Object.keys(prefsFromServer).length === 0) &&
           window.localStorage.getItem("userPreferences")
@@ -49,13 +49,11 @@ export default function Dashboard({ onLogout, setScreen }) {
               window.localStorage.getItem("userPreferences")
             );
           } catch (err) {
-            // Ignore JSON parse errors
+            // ignore JSON parse errors
           }
         }
 
-        console.log({ user: data.user });
-
-        // Save all returned data in dashboard state
+        // Store dashboard data in state
         setDashboard({
           news: data.news || [],
           prices: data.prices || {},
@@ -64,15 +62,15 @@ export default function Dashboard({ onLogout, setScreen }) {
           user: data.user || null,
         });
 
-        // Save preferences for quick access
+        // Save preferences separately
         setPrefs(prefsFromServer || null);
 
-        // Cache username locally (used in dashboard header)
+        // Cache username locally for header greeting
         if (data.user?.name) {
           window.localStorage.setItem("userName", data.user.name);
         }
 
-        setUser(data.user);
+        setUser(data.user || {});
         setLoading(false);
       } catch (err) {
         console.error("Failed to load dashboard:", err);
@@ -84,7 +82,7 @@ export default function Dashboard({ onLogout, setScreen }) {
     load();
   }, []);
 
-  // Optimistic voting (updates UI immediately before server confirmation)
+  // Optimistic voting (instant UI update)
   async function handleVote(section, itemId, vote, userId) {
     const token = window.localStorage.getItem("token");
     const k = voteKey(section, itemId);
@@ -94,7 +92,7 @@ export default function Dashboard({ onLogout, setScreen }) {
 
     try {
       await sendFeedback(token, { section, itemId, vote, userId });
-      // Keep optimistic state
+      // keep optimistic UI
     } catch (err) {
       console.error("Failed to send feedback:", err);
       setVotedMap((m) => {
@@ -111,12 +109,13 @@ export default function Dashboard({ onLogout, setScreen }) {
       <div
         style={{
           minHeight: "100vh",
-          background: "#000",
+          backgroundColor: "#000",
           color: "#fff",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontFamily: "sans-serif",
+          fontFamily: "Inter, system-ui, sans-serif",
+          fontSize: "1rem",
         }}
       >
         Loading dashboard...
@@ -129,74 +128,190 @@ export default function Dashboard({ onLogout, setScreen }) {
   const insightId = "insight-1";
   const memeId = "meme-1";
 
+  // Styled logout button (glass / neon)
+  const LogoutButton = (
+    <button
+      onClick={onLogout}
+      style={{
+        backgroundColor: "transparent",
+        border: "1px solid rgba(255,255,255,0.2)",
+        color: "#fff",
+        padding: "8px 14px",
+        borderRadius: "999px",
+        fontSize: "0.8rem",
+        fontWeight: "500",
+        lineHeight: 1,
+        display: "flex",
+        alignItems: "center",
+        gap: "6px",
+        cursor: "pointer",
+        boxShadow: "0 8px 24px rgba(0,0,0,0.6)",
+        backdropFilter: "blur(6px)",
+        backgroundImage:
+          "radial-gradient(circle at 0% 0%, rgba(0, 255, 255, 0.15) 0%, rgba(0,0,0,0) 60%)",
+        fontFamily: "Inter, system-ui, sans-serif",
+        transition: "all 0.15s ease",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.border = "1px solid rgba(0,255,255,0.5)";
+        e.currentTarget.style.boxShadow =
+          "0 10px 30px rgba(0,255,255,0.25), 0 0 40px rgba(0,255,255,0.4)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.border = "1px solid rgba(255,255,255,0.2)";
+        e.currentTarget.style.boxShadow =
+          "0 8px 24px rgba(0,0,0,0.6), 0 0 0 rgba(0,0,0,0)";
+      }}
+    >
+      <span>Log out</span>
+      <span style={{ fontSize: "0.9rem" }}>⏻</span>
+    </button>
+  );
+
+  // Button to go back to onboarding
+  const BackToOnboardingButton = (
+    <button
+      onClick={() => setScreen("onboarding")}
+      style={{
+        backgroundColor: "transparent",
+        border: "1px solid rgba(255,255,255,0.1)",
+        color: "rgba(255,255,255,0.6)",
+        padding: "8px 12px",
+        borderRadius: "8px",
+        fontSize: "0.7rem",
+        fontWeight: "500",
+        lineHeight: 1,
+        cursor: "pointer",
+        boxShadow: "0 8px 24px rgba(0,0,0,0.6)",
+        fontFamily: "Inter, system-ui, sans-serif",
+        transition: "all 0.15s ease",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.border = "1px solid rgba(255,255,255,0.4)";
+        e.currentTarget.style.color = "#fff";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.border = "1px solid rgba(255,255,255,0.1)";
+        e.currentTarget.style.color = "rgba(255,255,255,0.6)";
+      }}
+    >
+      Preferences
+    </button>
+  );
+
   return (
     <div
       style={{
         minHeight: "100vh",
-        background: "#000",
+        backgroundColor: "#000",
         color: "#fff",
         padding: "24px",
-        fontFamily: "sans-serif",
+        fontFamily: "Inter, system-ui, sans-serif",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
       }}
     >
-      <button onClick={onLogout}>Log out</button>
-      <button onClick={() => setScreen("onboarding")}>
-        Back to onboarding
-      </button>
-
-      {/* Header */}
+      {/* top bar */}
       <div
         style={{
           width: "100%",
           maxWidth: "1000px",
-          margin: "0 auto 24px",
-          background: "linear-gradient(to right,#1a1a1a,#000)",
-          border: "1px solid #333",
-          borderRadius: "12px",
-          padding: "16px",
-          boxShadow: "0 2px 10px rgba(0,0,0,0.6)",
-          color: "#fff",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          marginBottom: "24px",
         }}
       >
-        <div style={{ fontSize: "18px", fontWeight: 600 }}>
-          👋 Hey{" "}
-          {dashboard?.user?.name ||
-            window.localStorage.getItem("userName") ||
-            "friend"}{" "}
-          — your personal crypto dashboard
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          <div
+            style={{
+              fontSize: "0.7rem",
+              fontWeight: 500,
+              color: "rgba(111,255,233,0.9)",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              lineHeight: 1,
+              fontFamily: "Inter, system-ui, sans-serif",
+            }}
+          >
+            Your crypto command center
+          </div>
+
+          <div
+            style={{
+              fontSize: "1.4rem",
+              fontWeight: 600,
+              lineHeight: 1.25,
+              backgroundImage:
+                "linear-gradient(90deg,#ffffff 0%,#6fffe9 50%,#00b3ff 100%)",
+              WebkitBackgroundClip: "text",
+              color: "transparent",
+              textShadow: "0 30px 80px rgba(0,255,255,0.3)",
+              maxWidth: "700px",
+            }}
+          >
+            {`Welcome back, ${
+              dashboard?.user?.name ||
+              window.localStorage.getItem("userName") ||
+              "trader"
+            }.`}{" "}
+            This is your live market feed, AI insights and signals – tuned to
+            how you trade.
+          </div>
+
+          <div
+            style={{
+              fontSize: "0.8rem",
+              lineHeight: 1.4,
+              color: "rgba(255,255,255,0.6)",
+              maxWidth: "600px",
+            }}
+          >
+            Every card below can get a 👍 or 👎. We learn from that and adapt
+            what you see – price alerts, strategy notes, even memes. You train
+            the feed.
+          </div>
+
+          {errorMsg && (
+            <div
+              style={{
+                color: "#f55",
+                fontSize: "0.75rem",
+                lineHeight: 1.4,
+                fontWeight: 500,
+              }}
+            >
+              {errorMsg}
+            </div>
+          )}
         </div>
 
         <div
           style={{
-            fontSize: "12px",
-            opacity: 0.7,
-            lineHeight: 1.4,
-            maxWidth: "300px",
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "flex-start",
+            gap: "12px",
           }}
         >
-          Each card below can receive a 👍 or 👎 so we can learn what you enjoy
-          and improve future recommendations.
+          {BackToOnboardingButton}
+          {LogoutButton}
         </div>
-
-        {errorMsg && (
-          <div style={{ color: "#f55", fontSize: "12px", marginTop: "8px" }}>
-            {errorMsg}
-          </div>
-        )}
       </div>
 
-      {/* Preferences summary */}
+      {/* user prefs summary */}
       <div
         style={{
           width: "100%",
           maxWidth: "1000px",
-          margin: "0 auto 16px",
+          margin: "0 0 16px 0",
         }}
       >
         <UserPrefsSection prefs={prefs} />
       </div>
 
-      {/* Cards layout */}
+      {/* dashboard cards layout */}
       <div
         style={{
           width: "100%",
@@ -205,10 +320,10 @@ export default function Dashboard({ onLogout, setScreen }) {
           flexWrap: "wrap",
           gap: "16px",
           alignItems: "stretch",
-          margin: "0 auto",
+          margin: "0 auto 64px auto",
         }}
       >
-        {/* News Section */}
+        {/* News */}
         <NewsSection
           news={dashboard?.news || []}
           onUpvote={() => handleVote("news", newsId, 1, user.id)}
@@ -216,7 +331,7 @@ export default function Dashboard({ onLogout, setScreen }) {
           voted={votedMap[voteKey("news", newsId)] || null}
         />
 
-        {/* Prices Section */}
+        {/* Prices */}
         <PricesSection
           prices={dashboard?.prices || {}}
           prefs={prefs?.cryptoAssets}
@@ -225,7 +340,7 @@ export default function Dashboard({ onLogout, setScreen }) {
           voted={votedMap[voteKey("prices", pricesId)] || null}
         />
 
-        {/* AI Insight Section */}
+        {/* AI insight */}
         <InsightSection
           insight={dashboard?.aiInsight || null}
           onUpvote={() => handleVote("insight", insightId, 1, user.id)}
@@ -233,7 +348,7 @@ export default function Dashboard({ onLogout, setScreen }) {
           voted={votedMap[voteKey("insight", insightId)] || null}
         />
 
-        {/* Meme Section */}
+        {/* Meme */}
         <MemeSection
           meme={dashboard?.meme || null}
           onUpvote={() => handleVote("meme", memeId, 1, user.id)}
