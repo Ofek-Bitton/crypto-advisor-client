@@ -11,21 +11,28 @@ function PriceRow({ symbol, price }) {
   );
 }
 
-//  symbol="BTC" price={prices?.bitcoin?.usd} />
-//           <PriceRow symbol="ETH" price={prices?.?.usd} />
-//           <PriceRow symbol="SOL" price={prices?.solana?.usd} />
-//           <PriceRow symbol="DOGE" price={prices?.dogecoin?.usd} />
+// Example reference (not rendered directly):
+// <PriceRow symbol="BTC" price={prices?.bitcoin?.usd} />
+// <PriceRow symbol="ETH" price={prices?.ethereum?.usd} />
+// <PriceRow symbol="SOL" price={prices?.solana?.usd} />
+// <PriceRow symbol="DOGE" price={prices?.dogecoin?.usd} />
 
-export default function PricesSection({ prices, onUpvote, onDownvote, voted, prefs }) {
+export default function PricesSection({
+  prices,
+  onUpvote,
+  onDownvote,
+  voted,
+  prefs,
+}) {
   const coinToPriceMap = {
-    'BTC':prices?.bitcoin?.usd,
-    'ETH': prices?.ethereum?.usd,
-    'SOL': prices?.solana?.usd,
-    'DOGE': prices?.dogecoin?.usd,
-    }
+    BTC: prices?.bitcoin?.usd,
+    ETH: prices?.ethereum?.usd,
+    SOL: prices?.solana?.usd,
+    DOGE: prices?.dogecoin?.usd,
+  };
 
-    console.log(prefs)
-  
+  console.log(prefs);
+
   return (
     <DashboardCard
       title="Coin Prices 💹"
@@ -57,9 +64,16 @@ export default function PricesSection({ prices, onUpvote, onDownvote, voted, pre
           </tr>
         </thead>
         <tbody>
-          {prefs.map(pref => {
-            return <PriceRow symbol={pref} price={coinToPriceMap[pref]} />
-          })}
+          {Array.isArray(prefs) &&
+            prefs.map((pref) => {
+              return (
+                <PriceRow
+                  key={pref} // <-- this fixes the React warning
+                  symbol={pref}
+                  price={coinToPriceMap[pref]}
+                />
+              );
+            })}
         </tbody>
       </table>
     </DashboardCard>

@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { savePreferences } from "./api";
 
 export default function Onboarding({ onFinish, onLogout }) {
+  // coins selection
   const [assets, setAssets] = useState({
     BTC: false,
     ETH: false,
@@ -12,6 +13,7 @@ export default function Onboarding({ onFinish, onLogout }) {
   // "low" / "medium" / "high"
   const [risk, setRisk] = useState("");
 
+  // content types selection
   const [contentTypes, setContentTypes] = useState({
     news: false,
     education: false,
@@ -20,6 +22,50 @@ export default function Onboarding({ onFinish, onLogout }) {
 
   const [saved, setSaved] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  //
+  // preload previous preferences from localStorage (if they exist)
+  //
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("userPreferences");
+      if (!raw) return;
+
+      const prefs = JSON.parse(raw);
+      // prefs is expected to look like:
+      // {
+      //   cryptoAssets: ["BTC","ETH"],
+      //   investorType: "medium",
+      //   contentTypes: ["news","education"]
+      // }
+
+      // 1. init assets checkboxes
+      if (Array.isArray(prefs.cryptoAssets)) {
+        setAssets({
+          BTC: prefs.cryptoAssets.includes("BTC"),
+          ETH: prefs.cryptoAssets.includes("ETH"),
+          SOL: prefs.cryptoAssets.includes("SOL"),
+          DOGE: prefs.cryptoAssets.includes("DOGE"),
+        });
+      }
+
+      // 2. init risk radio
+      if (prefs.investorType) {
+        setRisk(prefs.investorType); // "low" / "medium" / "high"
+      }
+
+      // 3. init contentTypes checkboxes
+      if (Array.isArray(prefs.contentTypes)) {
+        setContentTypes({
+          news: prefs.contentTypes.includes("news"),
+          education: prefs.contentTypes.includes("education"),
+          signals: prefs.contentTypes.includes("signals"),
+        });
+      }
+    } catch (err) {
+      console.warn("[Onboarding] failed to preload prefs:", err);
+    }
+  }, []);
 
   function toggleAsset(symbol) {
     setAssets((prev) => ({ ...prev, [symbol]: !prev[symbol] }));
@@ -54,9 +100,11 @@ export default function Onboarding({ onFinish, onLogout }) {
         throw new Error(result.data?.msg || "Failed to save preferences");
       }
 
+      // mark completed locally
       window.localStorage.setItem("hasPrefs", "true");
       setSaved(true);
 
+      // move to dashboard
       onFinish && onFinish();
     } catch (err) {
       console.error(err);

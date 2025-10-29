@@ -188,35 +188,40 @@ export default function Dashboard({ onLogout, setScreen }) {
   );
 
   // Button to go back to onboarding
-  const BackToOnboardingButton = (
-    <button
-      onClick={() => setScreen("onboarding")}
-      style={{
-        backgroundColor: "transparent",
-        border: "1px solid rgba(255,255,255,0.1)",
-        color: "rgba(255,255,255,0.6)",
-        padding: "8px 12px",
-        borderRadius: "8px",
-        fontSize: "0.7rem",
-        fontWeight: "500",
-        lineHeight: 1,
-        cursor: "pointer",
-        boxShadow: "0 8px 24px rgba(0,0,0,0.6)",
-        fontFamily: "Inter, system-ui, sans-serif",
-        transition: "all 0.15s ease",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.border = "1px solid rgba(255,255,255,0.4)";
-        e.currentTarget.style.color = "#fff";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.border = "1px solid rgba(255,255,255,0.1)";
-        e.currentTarget.style.color = "rgba(255,255,255,0.6)";
-      }}
-    >
-      Preferences
-    </button>
-  );
+      const BackToOnboardingButton = (
+      <button
+        onClick={() => setScreen("onboarding")}
+        style={{
+          backgroundColor: "transparent",
+          border: "1px solid rgba(255,255,255,0.1)",
+          color: "rgba(255,255,255,0.6)",
+          padding: "8px 12px",
+          borderRadius: "8px",
+          fontSize: "0.7rem",
+          fontWeight: "500",
+          lineHeight: 1,
+          cursor: "pointer",
+          boxShadow: "0 8px 24px rgba(0,0,0,0.6)",
+          fontFamily: "Inter, system-ui, sans-serif",
+          transition: "all 0.15s ease",
+          display: "flex",
+          alignItems: "center",
+          gap: "6px",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.border = "1px solid rgba(255,255,255,0.4)";
+          e.currentTarget.style.color = "#fff";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.border = "1px solid rgba(255,255,255,0.1)";
+          e.currentTarget.style.color = "rgba(255,255,255,0.6)";
+        }}
+      >
+        <span style={{ fontSize: "0.8rem", lineHeight: 1 }}>🡄</span>
+        <span>Preferences</span>
+      </button>
+    );
+
 
   return (
     <div
