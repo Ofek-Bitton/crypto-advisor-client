@@ -15,6 +15,9 @@ export default function Dashboard({ onLogout, setScreen }) {
   const [votedMap, setVotedMap] = useState({}); // {"section:itemId": "up"|"down"}
   const [errorMsg, setErrorMsg] = useState("");
 
+  // current time state
+  const [currentTime, setCurrentTime] = useState(() => new Date());
+
   function voteKey(section, itemId) {
     return `${section}:${itemId}`;
   }
@@ -82,6 +85,23 @@ export default function Dashboard({ onLogout, setScreen }) {
     load();
   }, []);
 
+  // live clock updater (every 30s)
+  useEffect(() => {
+    const id = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 30000);
+    return () => clearInterval(id);
+  }, []);
+
+  function formatTime(dateObj) {
+    const optsDay = { weekday: "short", month: "short", day: "numeric" };
+    const dayPart = dateObj.toLocaleDateString("en-US", optsDay);
+    const year = dateObj.getFullYear();
+    const hh = String(dateObj.getHours()).padStart(2, "0");
+    const mm = String(dateObj.getMinutes()).padStart(2, "0");
+    return `${dayPart} ${year} • ${hh}:${mm}`;
+  }
+
   // Optimistic voting (instant UI update)
   async function handleVote(section, itemId, vote, userId) {
     const token = window.localStorage.getItem("token");
@@ -92,7 +112,6 @@ export default function Dashboard({ onLogout, setScreen }) {
 
     try {
       await sendFeedback(token, { section, itemId, vote, userId });
-      // keep optimistic UI
     } catch (err) {
       console.error("Failed to send feedback:", err);
       setVotedMap((m) => {
@@ -224,18 +243,39 @@ export default function Dashboard({ onLogout, setScreen }) {
         }}
       >
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          {/* time + heading block */}
           <div
             style={{
-              fontSize: "0.7rem",
-              fontWeight: 500,
-              color: "rgba(111,255,233,0.9)",
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              lineHeight: 1,
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "12px",
+              alignItems: "baseline",
               fontFamily: "Inter, system-ui, sans-serif",
             }}
           >
-            Your crypto command center
+            <div
+              style={{
+                fontSize: "0.7rem",
+                fontWeight: 500,
+                color: "rgba(111,255,233,0.9)",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                lineHeight: 1,
+              }}
+            >
+              Your crypto command center
+            </div>
+
+            <div
+              style={{
+                fontSize: "0.7rem",
+                fontWeight: 400,
+                color: "rgba(255,255,255,0.5)",
+                lineHeight: 1,
+              }}
+            >
+              {formatTime(currentTime)}
+            </div>
           </div>
 
           <div
@@ -311,7 +351,7 @@ export default function Dashboard({ onLogout, setScreen }) {
         <UserPrefsSection prefs={prefs} />
       </div>
 
-      {/* dashboard cards layout */}
+      {/* dashboard cards layout (reordered) */}
       <div
         style={{
           width: "100%",
@@ -323,14 +363,6 @@ export default function Dashboard({ onLogout, setScreen }) {
           margin: "0 auto 64px auto",
         }}
       >
-        {/* News */}
-        <NewsSection
-          news={dashboard?.news || []}
-          onUpvote={() => handleVote("news", newsId, 1, user.id)}
-          onDownvote={() => handleVote("news", newsId, -1, user.id)}
-          voted={votedMap[voteKey("news", newsId)] || null}
-        />
-
         {/* Prices */}
         <PricesSection
           prices={dashboard?.prices || {}}
@@ -354,6 +386,14 @@ export default function Dashboard({ onLogout, setScreen }) {
           onUpvote={() => handleVote("meme", memeId, 1, user.id)}
           onDownvote={() => handleVote("meme", memeId, -1, user.id)}
           voted={votedMap[voteKey("meme", memeId)] || null}
+        />
+
+        {/* News */}
+        <NewsSection
+          news={dashboard?.news || []}
+          onUpvote={() => handleVote("news", newsId, 1, user.id)}
+          onDownvote={() => handleVote("news", newsId, -1, user.id)}
+          voted={votedMap[voteKey("news", newsId)] || null}
         />
       </div>
     </div>
