@@ -300,7 +300,7 @@ export default function Dashboard({ onLogout, setScreen }) {
               dashboard?.user?.name ||
               window.localStorage.getItem("userName") ||
               "trader"
-            }.`}{" "}
+            }`}{" "}
             This is your live market feed, AI insights and signals – tuned to
             how you trade.
           </div>
